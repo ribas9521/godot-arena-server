@@ -4,7 +4,7 @@ import { Peer, PeerStatus } from "./types/Peer";
 import { ClientMessageType, Message, ServerMessageType } from "./types/Message";
 import { Match } from "./types/Match";
 const PORT = 8080;
-const MAX_NUMBER_OF_PEERS_ON_MATCH = 2;
+const MAX_NUMBER_OF_PEERS_ON_MATCH = 3;
 
 const wss = new WebSocket.Server({ port: PORT });
 console.log("Server started at por: " + PORT);
