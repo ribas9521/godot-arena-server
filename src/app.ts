@@ -3,14 +3,17 @@ import { generateId } from "./utils/crypto";
 import { Peer, PeerStatus } from "./types/Peer";
 import { ClientMessageType, Message, ServerMessageType } from "./types/Message";
 import { Match } from "./types/Match";
+import { convertKeysToCamelCase, convertKeysToSnakeCase } from "./utils/caseConvert";
+
 const PORT = 8080;
 const MAX_NUMBER_OF_PEERS_ON_MATCH = 3;
 
 const wss = new WebSocket.Server({ port: PORT });
-console.log("Server started at por: " + PORT);
+console.log("Server started at port: " + PORT);
 
 const Peers = new Map<number, Peer>();
 const Matches = new Map<number, Match>();
+
 
 wss.on("connection", (ws) => {
   const id = generateId();
@@ -42,7 +45,8 @@ wss.on("connection", (ws) => {
 const parseMessage = (peer: Peer, stringMessage: string) => {
   let parsedMessage: Message;
   try {
-    parsedMessage = JSON.parse(stringMessage);
+    const parsed = JSON.parse(stringMessage);
+    parsedMessage = convertKeysToCamelCase(parsed);
   } catch (e) {
     throw new Error("Invalid JSON");
   }
@@ -73,7 +77,7 @@ const parseMessage = (peer: Peer, stringMessage: string) => {
   }
 };
 
-export const handleMessage = (peer: Peer, data: any) => {
+export const handleMessage = (peer: Peer, data: Message) => {
   if (data.destinationPeer) {
     const destinationPeer = Peers.get(data.destinationPeer);
     if (!destinationPeer) {
@@ -88,7 +92,9 @@ export const handleMessage = (peer: Peer, data: any) => {
 };
 
 export const sendMessage = (peer: Peer, message: Message) => {
-  peer.ws.send(JSON.stringify(message));
+  // Convert the outgoing message from camelCase to snake_case.
+  const snakeMessage = convertKeysToSnakeCase(message);
+  peer.ws.send(JSON.stringify(snakeMessage));
 };
 
 export const handleFindMatch = (peer: Peer) => {
